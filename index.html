@@ -53,6 +53,39 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
+        /* Custom SVG Icon Styling */
+        .svg-icon {
+            background-color: #ef4444; /* red-500 */
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 4px;
+        }
+        /* Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+        .popup-content {
+            text-align: center;
+        }
+        .popup-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .popup-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.2rem;
+            color: #1f2937;
+        }
+        .popup-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>
@@ -67,48 +100,91 @@
         // Use window.onload to ensure the DOM is fully loaded before initializing the map.
         window.onload = function() {
             // Step 1: Initialize the map and set its view.
-            // We'll set a default center point (New York City) and a zoom level.
-            const map = L.map('map').setView([40.7128, -74.0060], 10);
+            const map = L.map('map').setView([40.7128, -74.0060], 3);
 
             // Step 2: Add a tile layer. This is the base map.
-            // We use OpenStreetMap tiles, which are free and open-source.
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // Step 3: Define a list of landmarks with their coordinates and information.
+            // Step 3: Define a custom SVG icon.
+            const svgIcon = L.divIcon({
+                html: `<svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+                className: '', // We use a class for custom styling in the CSS.
+                iconSize: [36, 36],
+                iconAnchor: [18, 36], // Point of the icon which corresponds to marker's location
+                popupAnchor: [0, -36] // Point from which the popup should open relative to the iconAnchor
+            });
+
+            // Step 4: Define a list of landmarks with their coordinates and information, including image URLs.
             const landmarks = [
                 {
                     name: "Eiffel Tower",
                     lat: 48.8584,
                     lng: 2.2945,
-                    description: "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France."
+                    description: "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France.",
+                    // This is a real image URL now. To find more, right-click on an image on a website and select "Copy image address".
+                    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%2827725455589%29.jpg/800px-Tour_Eiffel_Wikimedia_Commons_%2827725455589%29.jpg"
                 },
                 {
                     name: "Statue of Liberty",
                     lat: 40.6892,
                     lng: -74.0445,
-                    description: "A colossal neoclassical sculpture on Liberty Island in New York Harbor, New York."
+                    description: "A colossal neoclassical sculpture on Liberty Island in New York Harbor, New York.",
+                    imageUrl: "https://placehold.co/200x150/C7D2FE/1f2937?text=Statue+of+Liberty"
                 },
                 {
                     name: "The Colosseum",
                     lat: 41.8902,
                     lng: 12.4922,
-                    description: "An oval amphitheatre in the centre of the city of Rome, Italy."
+                    description: "An oval amphitheatre in the centre of the city of Rome, Italy.",
+                    imageUrl: "https://placehold.co/200x150/FECACA/1f2937?text=The+Colosseum"
                 },
                 {
                     name: "Sydney Opera House",
                     lat: -33.8568,
                     lng: 151.2153,
-                    description: "A multi-venue performing arts centre in Sydney, New South Wales, Australia."
+                    description: "A multi-venue performing arts centre in Sydney, New South Wales, Australia.",
+                    imageUrl: "https://placehold.co/200x150/D2F4F7/1f2937?text=Sydney+Opera+House"
+                },
+                {
+                    name: "Golden Gate Bridge",
+                    lat: 37.8199,
+                    lng: -122.4783,
+                    description: "A famous suspension bridge spanning the Golden Gate, the one-mile-wide strait connecting San Francisco Bay and the Pacific Ocean.",
+                    imageUrl: "https://placehold.co/200x150/FDE68A/1f2937?text=Golden+Gate+Bridge"
+                },
+                {
+                    name: "Machu Picchu",
+                    lat: -13.1631,
+                    lng: -72.5450,
+                    description: "A 15th-century Inca citadel located in the Eastern Cordillera of southern Peru.",
+                    imageUrl: "https://placehold.co/200x150/B6F7D2/1f2937?text=Machu+Picchu"
+                },
+                {
+                    name: "The Taj Mahal",
+                    lat: 27.1751,
+                    lng: 78.0421,
+                    description: "An ivory-white marble mausoleum on the right bank of the river Yamuna in the Indian city of Agra.",
+                    imageUrl: "https://placehold.co/200x150/E9D5FF/1f2937?text=The+Taj+Mahal"
                 },
             ];
 
-            // Step 4: Loop through the landmarks and add a marker for each one.
+            // Step 5: Loop through the landmarks and add a marker for each one.
             landmarks.forEach(landmark => {
-                const marker = L.marker([landmark.lat, landmark.lng]).addTo(map);
-                // Attach a popup to each marker that displays the landmark's name and description.
-                marker.bindPopup(`<b>${landmark.name}</b><br>${landmark.description}`);
+                const marker = L.marker([landmark.lat, landmark.lng], {icon: svgIcon}).addTo(map);
+
+                // Create a custom HTML string for the popup, including the image.
+                const popupContent = `
+                    <div class="popup-content">
+                        <img src="${landmark.imageUrl}" alt="${landmark.name} photo" onerror="this.onerror=null; this.src='https://placehold.co/200x150/FFC0CB/000000?text=Image+Unavailable';">
+                        <h3>${landmark.name}</h3>
+                        <p>${landmark.description}</p>
+                    </div>
+                `;
+
+                // Bind the custom popup to the marker.
+                marker.bindPopup(popupContent);
             });
         };
     </script>
