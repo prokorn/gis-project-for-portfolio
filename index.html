@@ -8,12 +8,8 @@
         Leaflet.js is a lightweight, open-source JavaScript library for interactive maps.
         We'll use a CDN to include its CSS and JavaScript files.
     -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -68,7 +64,7 @@
             font-family: 'Inter', sans-serif;
         }
         .popup-content {
-            text-align: center;
+            text-align: left;
         }
         .popup-content img {
             max-width: 100%;
@@ -80,11 +76,13 @@
             margin: 0 0 5px 0;
             font-size: 1.2rem;
             color: #1f2937;
+            text-align: center;
         }
         .popup-content p {
             margin: 0;
             font-size: 0.9rem;
             color: #6b7280;
+            text-align: left;
         }
         .popup-content h3 a {
             color: #1f2937;
@@ -119,9 +117,9 @@
             const svgIcon = L.divIcon({
                 html: `<svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
                 className: '', // We use a class for custom styling in the CSS.
-                iconSize: [36, 36],
-                iconAnchor: [18, 36], // Point of the icon which corresponds to marker's location
-                popupAnchor: [0, -36] // Point from which the popup should open relative to the iconAnchor
+                iconSize: [18, 18], // Smaller icon size
+                iconAnchor: [9, 18], // Point of the icon which corresponds to marker's location
+                popupAnchor: [0, -18] // Point from which the popup should open relative to the iconAnchor
             });
 
             // Step 4: Define a list of landmarks with their coordinates and information, including image URLs.
@@ -179,7 +177,7 @@
                     lat: 27.1751,
                     lng: 78.0421,
                     description: "An ivory-white marble mausoleum on the right bank of the river Yamuna in the Indian city of Agra.",
-                    imageUrl: "https://www.travelandleisure.com/thmb/wdUcyBQyQ0wUVs4wLahp0iWgZhc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/taj-mahal-agra-india-TAJ0217-9eab8f20d11d4391901867ed1ce222b8.jpg",
+                    imageUrl: "https://www.travelandleisure.com/thmb/wdUcyBQyQ0wUVs4wLahp0iWgZhc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc)/taj-mahal-agra-india-TAJ0217-9eab8f20d11d4391901867ed1ce222b8.jpg",
                     wikipediaUrl: "https://en.wikipedia.org/wiki/Taj_Mahal"
                 },
                 {
@@ -224,6 +222,309 @@
                 // Bind the custom popup to the marker.
                 marker.bindPopup(popupContent);
             });
+
+            // ---
+            // NEW CODE FOR COUNTRY LAYERS
+            // ---
+
+            // A data source for countries with population, GDP, and GDP per capita information.
+            // This is a simplified, hardcoded dataset for demonstration purposes.
+            // For a more robust solution, this data would be fetched from a live API.
+            const countryData = {
+{
+  "China": { "population": 1425892000, "gdp": 17734000000000, "gdpPerCapita": 12422, "year": 2024 },
+  "United States": { "population": 338289857, "gdp": 29184900000000, "gdpPerCapita": 86300, "year": 2024 },
+  "India": { "population": 1428627000, "gdp": 3731000000000, "gdpPerCapita": 2610, "year": 2024 },
+  "Japan": { "population": 123800000, "gdp": 4233000000000, "gdpPerCapita": 34200, "year": 2024 },
+  "Germany": { "population": 84430000, "gdp": 4600000000000, "gdpPerCapita": 54500, "year": 2024 },
+  "United Kingdom": { "population": 67960000, "gdp": 3500000000000, "gdpPerCapita": 51500, "year": 2024 },
+  "France": { "population": 65900000, "gdp": 2900000000000, "gdpPerCapita": 43900, "year": 2024 },
+  "Brazil": { "population": 203000000, "gdp": 2170000000000, "gdpPerCapita": 10700, "year": 2024 },
+  "Italy": { "population": 58900000, "gdp": 2300000000000, "gdpPerCapita": 39000, "year": 2024 },
+  "Canada": { "population": 39800000, "gdp": 2250000000000, "gdpPerCapita": 56500, "year": 2024 },
+  "South Korea": { "population": 51300000, "gdp": 1865000000000, "gdpPerCapita": 36300, "year": 2024 },
+  "Russia": { "population": 144100000, "gdp": 2220000000000, "gdpPerCapita": 15400, "year": 2024 },
+  "Australia": { "population": 26300000, "gdp": 1750000000000, "gdpPerCapita": 66600, "year": 2024 },
+  "Spain": { "population": 47800000, "gdp": 1580000000000, "gdpPerCapita": 33100, "year": 2024 },
+  "Mexico": { "population": 128000000, "gdp": 1950000000000, "gdpPerCapita": 15200, "year": 2024 },
+  "Indonesia": { "population": 279100000, "gdp": 1420000000000, "gdpPerCapita": 5100, "year": 2024 },
+  "Netherlands": { "population": 17900000, "gdp": 1100000000000, "gdpPerCapita": 61200, "year": 2024 },
+  "Saudi Arabia": { "population": 36800000, "gdp": 1110000000000, "gdpPerCapita": 30200, "year": 2024 },
+  "Turkey": { "population": 85900000, "gdp": 1220000000000, "gdpPerCapita": 14200, "year": 2024 },
+  "Switzerland": { "population": 8750000, "gdp": 824000000000, "gdpPerCapita": 94100, "year": 2024 },
+  "Argentina": { "population": 46500000, "gdp": 630000000000, "gdpPerCapita": 13600, "year": 2024 },
+  "Sweden": { "population": 10600000, "gdp": 650000000000, "gdpPerCapita": 61300, "year": 2024 },
+  "Belgium": { "population": 11700000, "gdp": 590000000000, "gdpPerCapita": 50400, "year": 2024 },
+  "Thailand": { "population": 71500000, "gdp": 550000000000, "gdpPerCapita": 7700, "year": 2024 },
+  "Austria": { "population": 9100000, "gdp": 530000000000, "gdpPerCapita": 58200, "year": 2024 },
+  "Norway": { "population": 5600000, "gdp": 550000000000, "gdpPerCapita": 98200, "year": 2024 },
+  "United Arab Emirates": { "population": 10000000, "gdp": 535000000000, "gdpPerCapita": 53000, "year": 2024 },
+  "Israel": { "population": 9300000, "gdp": 600000000000, "gdpPerCapita": 64500, "year": 2024 },
+  "Nigeria": { "population": 226000000, "gdp": 480000000000, "gdpPerCapita": 2100, "year": 2024 },
+  "Singapore": { "population": 6000000, "gdp": 460000000000, "gdpPerCapita": 76000, "year": 2024 },
+  "Malaysia": { "population": 34000000, "gdp": 430000000000, "gdpPerCapita": 12600, "year": 2024 },
+  "Philippines": { "population": 119000000, "gdp": 440000000000, "gdpPerCapita": 3700, "year": 2024 },
+  "Bangladesh": { "population": 174000000, "gdp": 446000000000, "gdpPerCapita": 2600, "year": 2024 },
+  "Vietnam": { "population": 100000000, "gdp": 465000000000, "gdpPerCapita": 4600, "year": 2024 },
+  "Pakistan": { "population": 245000000, "gdp": 389000000000, "gdpPerCapita": 1600, "year": 2024 },
+  "Colombia": { "population": 52000000, "gdp": 450000000000, "gdpPerCapita": 8700, "year": 2024 },
+  "Chile": { "population": 19900000, "gdp": 350000000000, "gdpPerCapita": 17600, "year": 2024 },
+  "Peru": { "population": 34700000, "gdp": 290000000000, "gdpPerCapita": 8400, "year": 2024 },
+  "Iraq": { "population": 46000000, "gdp": 260000000000, "gdpPerCapita": 5650, "year": 2024 },
+  "Egypt": { "population": 111000000, "gdp": 453000000000, "gdpPerCapita": 4100, "year": 2024 },
+  "South Africa": { "population": 61000000, "gdp": 390000000000, "gdpPerCapita": 6400, "year": 2024 },
+  "Algeria": { "population": 46000000, "gdp": 210000000000, "gdpPerCapita": 4600, "year": 2024 },
+  "Ukraine": { "population": 36900000, "gdp": 200000000000, "gdpPerCapita": 5400, "year": 2024 },
+  "Morocco": { "population": 38000000, "gdp": 145000000000, "gdpPerCapita": 3800, "year": 2024 },
+  "Angola": { "population": 37000000, "gdp": 110000000000, "gdpPerCapita": 3000, "year": 2024 },
+  "Sudan": { "population": 49000000, "gdp": 35000000000, "gdpPerCapita": 720, "year": 2024 },
+  "Kenya": { "population": 56000000, "gdp": 120000000000, "gdpPerCapita": 2150, "year": 2024 },
+  "Ethiopia": { "population": 126000000, "gdp": 155000000000, "gdpPerCapita": 1230, "year": 2024 },
+  "Ghana": { "population": 34000000, "gdp": 80000000000, "gdpPerCapita": 2350, "year": 2024 },
+  "Czech Republic": { "population": 10500000, "gdp": 280000000000, "gdpPerCapita": 26500, "year": 2024 },
+  "New Zealand": { "population": 5200000, "gdp": 250000000000, "gdpPerCapita": 48000, "year": 2024 },
+  "Portugal": { "population": 10300000, "gdp": 280000000000, "gdpPerCapita": 27000, "year": 2024 },
+  "Greece": { "population": 10400000, "gdp": 230000000000, "gdpPerCapita": 22000, "year": 2024 },
+  "Hungary": { "population": 9600000, "gdp": 225000000000, "gdpPerCapita": 23400, "year": 2024 },
+  "Romania": { "population": 19000000, "gdp": 370000000000, "gdpPerCapita": 19500, "year": 2024 },
+  "Poland": { "population": 37800000, "gdp": 842000000000, "gdpPerCapita": 22200, "year": 2024 },
+  "Slovakia": { "population": 5400000, "gdp": 130000000000, "gdpPerCapita": 24100, "year": 2024 },
+  "Slovenia": { "population": 2100000, "gdp": 72000000000, "gdpPerCapita": 34000, "year": 2024 },
+  "Croatia": { "population": 3900000, "gdp": 85000000000, "gdpPerCapita": 21800, "year": 2024 },
+  "Serbia": { "population": 6600000, "gdp": 80000000000, "gdpPerCapita": 12100, "year": 2024 },
+  "Bulgaria": { "population": 6400000, "gdp": 110000000000, "gdpPerCapita": 17200, "year": 2024 },
+  "Lithuania": { "population": 2700000, "gdp": 85000000000, "gdpPerCapita": 31000, "year": 2024 },
+  "Latvia": { "population": 1900000, "gdp": 47000000000, "gdpPerCapita": 24700, "year": 2024 },
+  "Estonia": { "population": 1300000, "gdp": 40000000000, "gdpPerCapita": 30800, "year": 2024 },
+  "Finland": { "population": 5500000, "gdp": 300000000000, "gdpPerCapita": 55000, "year": 2024 },
+  "Denmark": { "population": 5900000, "gdp": 420000000000, "gdpPerCapita": 71000, "year": 2024 },
+  "Ireland": { "population": 5100000, "gdp": 540000000000, "gdpPerCapita": 106000, "year": 2024 },
+  "Iceland": { "population": 390000, "gdp": 30000000000, "gdpPerCapita": 77000, "year": 2024 },
+  "Luxembourg": { "population": 660000, "gdp": 85000000000, "gdpPerCapita": 128000, "year": 2024 },
+  "Qatar": { "population": 3000000, "gdp": 230000000000, "gdpPerCapita": 76700, "year": 2024 },
+  "Kuwait": { "population": 4500000, "gdp": 155000000000, "gdpPerCapita": 34400, "year": 2024 },
+  "Oman": { "population": 5400000, "gdp": 120000000000, "gdpPerCapita": 22000, "year": 2024 },
+  "Bahrain": { "population": 1600000, "gdp": 48000000000, "gdpPerCapita": 30000, "year": 2024 },
+  "Jordan": { "population": 11000000, "gdp": 52000000000, "gdpPerCapita": 4700, "year": 2024 },
+  "Lebanon": { "population": 5600000, "gdp": 20000000000, "gdpPerCapita": 3600, "year": 2024 },
+  "Syria": { "population": 24000000, "gdp": 15000000000, "gdpPerCapita": 630, "year": 2024 },
+  "Yemen": { "population": 34000000, "gdp": 21000000000, "gdpPerCapita": 620, "year": 2024 },
+  "Afghanistan": { "population": 42000000, "gdp": 15000000000, "gdpPerCapita": 360, "year": 2024 },
+  "Kazakhstan": { "population": 20000000, "gdp": 260000000000, "gdpPerCapita": 13000, "year": 2024 },
+  "Uzbekistan": { "population": 37000000, "gdp": 95000000000, "gdpPerCapita": 2570, "year": 2024 },
+  "Turkmenistan": { "population": 6500000, "gdp": 50000000000, "gdpPerCapita": 7700, "year": 2024 },
+  "Kyrgyzstan": { "population": 7200000, "gdp": 14000000000, "gdpPerCapita": 1950, "year": 2024 },
+  "Tajikistan": { "population": 10000000, "gdp": 12000000000, "gdpPerCapita": 1200, "year": 2024 },
+  "Mongolia": { "population": 3500000, "gdp": 19000000000, "gdpPerCapita": 5400, "year": 2024 },
+  "Nepal": { "population": 31000000, "gdp": 44000000000, "gdpPerCapita": 1420, "year": 2024 },
+  "Sri Lanka": { "population": 22000000, "gdp": 84000000000, "gdpPerCapita": 3800, "year": 2024 },
+  "Maldives": { "population": 500000, "gdp": 6000000000, "gdpPerCapita": 12000, "year": 2024 },
+  "Bhutan": { "population": 800000, "gdp": 3000000000, "gdpPerCapita": 3750, "year": 2024 },
+  "Myanmar": { "population": 55000000, "gdp": 75000000000, "gdpPerCapita": 1360, "year": 2024 },
+  "Cambodia": { "population": 17000000, "gdp": 30000000000, "gdpPerCapita": 1760, "year": 2024 },
+  "Laos": { "population": 7600000, "gdp": 14000000000, "gdpPerCapita": 1800, "year": 2024 },
+  "Brunei": { "population": 460000, "gdp": 18000000000, "gdpPerCapita": 39000, "year": 2024 },
+  "Timor-Leste": { "population": 1400000, "gdp": 3200000000, "gdpPerCapita": 2300, "year": 2024 },
+  "Papua New Guinea": { "population": 10000000, "gdp": 32000000000, "gdpPerCapita": 3200, "year": 2024 },
+  "Fiji": { "population": 950000, "gdp": 5000000000, "gdpPerCapita": 5300, "year": 2024 },
+  "Solomon Islands": { "population": 750000, "gdp": 1600000000, "gdpPerCapita": 2100, "year": 2024 },
+  "Vanuatu": { "population": 350000, "gdp": 1200000000, "gdpPerCapita": 3400, "year": 2024 },
+  "Samoa": { "population": 220000, "gdp": 1200000000, "gdpPerCapita": 5400, "year": 2024 },
+  "Tonga": { "population": 110000, "gdp": 600000000, "gdpPerCapita": 5400, "year": 2024 },
+  "Micronesia": { "population": 110000, "gdp": 400000000, "gdpPerCapita": 3600, "year": 2024 },
+  "Palau": { "population": 18000, "gdp": 250000000, "gdpPerCapita": 14000, "year": 2024 },
+  "Marshall Islands": { "population": 60000, "gdp": 300000000, "gdpPerCapita": 5000, "year": 2024 },
+  "Nauru": { "population": 12000, "gdp": 120000000, "gdpPerCapita": 10000, "year": 2024 },
+  "Tuvalu": { "population": 12000, "gdp": 70000000, "gdpPerCapita": 5800, "year": 2024 },
+  "Guatemala": { "population": 18000000, "gdp": 110000000000, "gdpPerCapita": 6100, "year": 2024 },
+  "Honduras": { "population": 10700000, "gdp": 35000000000, "gdpPerCapita": 3300, "year": 2024 },
+  "El Salvador": { "population": 6500000, "gdp": 36000000000, "gdpPerCapita": 5500, "year": 2024 },
+  "Nicaragua": { "population": 7100000, "gdp": 18000000000, "gdpPerCapita": 2600, "year": 2024 },
+  "Costa Rica": { "population": 5300000, "gdp": 75000000000, "gdpPerCapita": 14200, "year": 2024 },
+  "Panama": { "population": 4500000, "gdp": 90000000000, "gdpPerCapita": 20000, "year": 2024 },
+  "Cuba": { "population": 11000000, "gdp": 110000000000, "gdpPerCapita": 10000, "year": 2024 },
+  "Haiti": { "population": 12000000, "gdp": 18000000000, "gdpPerCapita": 1500, "year": 2024 },
+  "Dominican Republic": { "population": 11500000, "gdp": 135000000000, "gdpPerCapita": 11700, "year": 2024 },
+  "Jamaica": { "population": 2900000, "gdp": 20000000000, "gdpPerCapita": 6900, "year": 2024 },
+  "Trinidad and Tobago": { "population": 1500000, "gdp": 30000000000, "gdpPerCapita": 20000, "year": 2024 },
+  "Barbados": { "population": 280000, "gdp": 6000000000, "gdpPerCapita": 21000, "year": 2024 },
+  "Bahamas": { "population": 400000, "gdp": 13000000000, "gdpPerCapita": 32000, "year": 2024 },
+  "Belize": { "population": 430000, "gdp": 3200000000, "gdpPerCapita": 7400, "year": 2024 },
+  "Guyana": { "population": 800000, "gdp": 20000000000, "gdpPerCapita": 25000, "year": 2024 },
+  "Suriname": { "population": 640000, "gdp": 12000000000, "gdpPerCapita": 18700, "year": 2024 },
+  "Venezuela": { "population": 28000000, "gdp": 100000000000, "gdpPerCapita": 3600, "year": 2024 },
+  "Ecuador": { "population": 18000000, "gdp": 120000000000, "gdpPerCapita": 6700, "year": 2024 },
+  "Bolivia": { "population": 12000000, "gdp": 50000000000, "gdpPerCapita": 4200, "year": 2024 },
+  "Paraguay": { "population": 7500000, "gdp": 50000000000, "gdpPerCapita": 6600, "year": 2024 },
+  "Uruguay": { "population": 3500000, "gdp": 80000000000, "gdpPerCapita": 22800, "year": 2024 },
+  "French Guiana": { "population": 310000, "gdp": 5300000000, "gdpPerCapita": 17000, "year": 2024 },
+  "Greenland": { "population": 56000, "gdp": 3000000000, "gdpPerCapita": 53000, "year": 2024 },
+  "Bermuda": { "population": 64000, "gdp": 7800000000, "gdpPerCapita": 122000, "year": 2024 },
+  "Saint Lucia": { "population": 180000, "gdp": 3000000000, "gdpPerCapita": 16500, "year": 2024 },
+  "Grenada": { "population": 110000, "gdp": 1600000000, "gdpPerCapita": 14500, "year": 2024 },
+  "Saint Vincent and the Grenadines": { "population": 100000, "gdp": 1200000000, "gdpPerCapita": 12000, "year": 2024 },
+  "Antigua and Barbuda": { "population": 100000, "gdp": 1800000000, "gdpPerCapita": 18000, "year": 2024 },
+  "Dominica": { "population": 70000, "gdp": 800000000, "gdpPerCapita": 11400, "year": 2024 },
+  "Saint Kitts and Nevis": { "population": 50000, "gdp": 1200000000, "gdpPerCapita": 24000, "year": 2024 },
+  "Puerto Rico": { "population": 3200000, "gdp": 115000000000, "gdpPerCapita": 35900, "year": 2024 },
+  "Aruba": { "population": 110000, "gdp": 3100000000, "gdpPerCapita": 28200, "year": 2024 },
+  "Curaçao": { "population": 155000, "gdp": 5100000000, "gdpPerCapita": 32900, "year": 2024 },
+  "Sint Maarten": { "population": 43000, "gdp": 1200000000, "gdpPerCapita": 27900, "year": 2024 },
+  "Turks and Caicos": { "population": 46000, "gdp": 1200000000, "gdpPerCapita": 26100, "year": 2024 },
+  "Cayman Islands": { "population": 70000, "gdp": 5200000000, "gdpPerCapita": 74000, "year": 2024 },
+  "British Virgin Islands": { "population": 31000, "gdp": 1600000000, "gdpPerCapita": 51600, "year": 2024 },
+  "Anguilla": { "population": 16000, "gdp": 330000000, "gdpPerCapita": 20600, "year": 2024 },
+  "Montserrat": { "population": 4900, "gdp": 65000000, "gdpPerCapita": 13300, "year": 2024 },
+  "Saint Martin": { "population": 39000, "gdp": 1100000000, "gdpPerCapita": 28000, "year": 2024 },
+  "Guadeloupe": { "population": 390000, "gdp": 11500000000, "gdpPerCapita": 29500, "year": 2024 },
+  "Martinique": { "population": 370000, "gdp": 12000000000, "gdpPerCapita": 32400, "year": 2024 },
+  "Reunion": { "population": 870000, "gdp": 28000000000, "gdpPerCapita": 32200, "year": 2024 },
+  "Mayotte": { "population": 330000, "gdp": 5800000000, "gdpPerCapita": 17600, "year": 2024 },
+  "Tunisia": { "population": 12500000, "gdp": 52000000000, "gdpPerCapita": 4200, "year": 2024 },
+  "Libya": { "population": 7000000, "gdp": 48000000000, "gdpPerCapita": 6900, "year": 2024 },
+  "Mauritania": { "population": 5200000, "gdp": 11000000000, "gdpPerCapita": 2100, "year": 2024 },
+  "Mali": { "population": 23000000, "gdp": 20000000000, "gdpPerCapita": 870, "year": 2024 },
+  "Niger": { "population": 28000000, "gdp": 16000000000, "gdpPerCapita": 570, "year": 2024 },
+  "Chad": { "population": 18000000, "gdp": 14000000000, "gdpPerCapita": 780, "year": 2024 },
+  "South Sudan": { "population": 12000000, "gdp": 7000000000, "gdpPerCapita": 580, "year": 2024 },
+  "Eritrea": { "population": 3700000, "gdp": 2400000000, "gdpPerCapita": 650, "year": 2024 },
+  "Djibouti": { "population": 1200000, "gdp": 4000000000, "gdpPerCapita": 3300, "year": 2024 },
+  "Somalia": { "population": 18000000, "gdp": 8000000000, "gdpPerCapita": 450, "year": 2024 },
+  "Uganda": { "population": 48000000, "gdp": 55000000000, "gdpPerCapita": 1150, "year": 2024 },
+  "Rwanda": { "population": 14000000, "gdp": 16000000000, "gdpPerCapita": 1140, "year": 2024 },
+  "Burundi": { "population": 13000000, "gdp": 3800000000, "gdpPerCapita": 290, "year": 2024 },
+  "Tanzania": { "population": 67000000, "gdp": 90000000000, "gdpPerCapita": 1340, "year": 2024 },
+  "Seychelles": { "population": 100000, "gdp": 2200000000, "gdpPerCapita": 22000, "year": 2024 },
+  "Comoros": { "population": 870000, "gdp": 1500000000, "gdpPerCapita": 1700, "year": 2024 },
+  "Madagascar": { "population": 31000000, "gdp": 15000000000, "gdpPerCapita": 480, "year": 2024 },
+  "Mauritius": { "population": 1300000, "gdp": 15000000000, "gdpPerCapita": 11500, "year": 2024 },
+  "Mozambique": { "population": 34000000, "gdp": 20000000000, "gdpPerCapita": 590, "year": 2024 },
+  "Zambia": { "population": 21000000, "gdp": 30000000000, "gdpPerCapita": 1430, "year": 2024 },
+  "Zimbabwe": { "population": 17000000, "gdp": 28000000000, "gdpPerCapita": 1650, "year": 2024 },
+  "Malawi": { "population": 22000000, "gdp": 13000000000, "gdpPerCapita": 590, "year": 2024 },
+  "Namibia": { "population": 2700000, "gdp": 14000000000, "gdpPerCapita": 5200, "year": 2024 },
+  "Botswana": { "population": 2600000, "gdp": 20000000000, "gdpPerCapita": 7700, "year": 2024 },
+  "Lesotho": { "population": 2300000, "gdp": 2500000000, "gdpPerCapita": 1090, "year": 2024 },
+  "Eswatini": { "population": 1200000, "gdp": 5300000000, "gdpPerCapita": 4400, "year": 2024 },
+  "Gabon": { "population": 2400000, "gdp": 24000000000, "gdpPerCapita": 10000, "year": 2024 },
+  "Congo (Brazzaville)": { "population": 6000000, "gdp": 14000000000, "gdpPerCapita": 2330, "year": 2024 },
+  "Congo (Kinshasa)": { "population": 108000000, "gdp": 65000000000, "gdpPerCapita": 600, "year": 2024 },
+  "Central African Republic": { "population": 6000000, "gdp": 2800000000, "gdpPerCapita": 470, "year": 2024 },
+  "Cameroon": { "population": 29000000, "gdp": 55000000000, "gdpPerCapita": 1900, "year": 2024 },
+  "Equatorial Guinea": { "population": 1700000, "gdp": 12000000000, "gdpPerCapita": 7000, "year": 2024 },
+  "São Tomé and Príncipe": { "population": 240000, "gdp": 540000000, "gdpPerCapita": 2250, "year": 2024 },
+  "Ivory Coast": { "population": 29000000, "gdp": 80000000000, "gdpPerCapita": 2750, "year": 2024 },
+  "Togo": { "population": 9200000, "gdp": 9100000000, "gdpPerCapita": 990, "year": 2024 },
+  "Benin": { "population": 14000000, "gdp": 17000000000, "gdpPerCapita": 1210, "year": 2024 },
+  "Burkina Faso": { "population": 23000000, "gdp": 20000000000, "gdpPerCapita": 870, "year": 2024 },
+  "Liberia": { "population": 5500000, "gdp": 5300000000, "gdpPerCapita": 960, "year": 2024 },
+  "Sierra Leone": { "population": 8400000, "gdp": 6000000000, "gdpPerCapita": 710, "year": 2024 },
+  "Guinea": { "population": 14000000, "gdp": 20000000000, "gdpPerCapita": 1430, "year": 2024 },
+  "Guinea-Bissau": { "population": 2100000, "gdp": 2000000000, "gdpPerCapita": 950, "year": 2024 },
+  "Gambia": { "population": 2800000, "gdp": 2200000000, "gdpPerCapita": 790, "year": 2024 },
+  "Senegal": { "population": 18500000, "gdp": 30000000000, "gdpPerCapita": 1620, "year": 2024 },
+  "Armenia": { "population": 3000000, "gdp": 20000000000, "gdpPerCapita": 6600, "year": 2024 },
+  "Azerbaijan": { "population": 10000000, "gdp": 70000000000, "gdpPerCapita": 7000, "year": 2024 },
+  "Georgia": { "population": 3700000, "gdp": 25000000000, "gdpPerCapita": 6700, "year": 2024 },
+  "Palestine": { "population": 5500000, "gdp": 18000000000, "gdpPerCapita": 3200, "year": 2024 },
+  "Kiribati": { "population": 130000, "gdp": 240000000, "gdpPerCapita": 1850, "year": 2024 },
+  "Monaco": { "population": 40000, "gdp": 9000000000, "gdpPerCapita": 225000, "year": 2024 },
+  "Liechtenstein": { "population": 40000, "gdp": 7000000000, "gdpPerCapita": 175000, "year": 2024 },
+  "San Marino": { "population": 34000, "gdp": 2200000000, "gdpPerCapita": 65000, "year": 2024 },
+  "Andorra": { "population": 80000, "gdp": 3500000000, "gdpPerCapita": 44000, "year": 2024 },
+  "Malta": { "population": 540000, "gdp": 20000000000, "gdpPerCapita": 37000, "year": 2024 },
+  "Cyprus": { "population": 1300000, "gdp": 33000000000, "gdpPerCapita": 25000, "year": 2024 },
+  "Montenegro": { "population": 620000, "gdp": 8000000000, "gdpPerCapita": 13000, "year": 2024 },
+  "North Macedonia": { "population": 1800000, "gdp": 15000000000, "gdpPerCapita": 8300, "year": 2024 }
+            };
+
+            // Function to generate a random hex color
+            function getRandomColor() {
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+
+            // Function to format numbers with commas
+            function formatNumber(num) {
+                return num.toLocaleString();
+            }
+
+            // Fetch the GeoJSON data for world countries
+            fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(geoJsonData => {
+                    // Create a GeoJSON layer with custom styling and popups
+                    const countriesLayer = L.geoJSON(geoJsonData, {
+                        style: function(feature) {
+                            return {
+                                fillColor: getRandomColor(),
+                                weight: 1.5,
+                                opacity: 1,
+                                color: 'white', // Outline color
+                                fillOpacity: 0.7
+                            };
+                        },
+                        onEachFeature: function(feature, layer) {
+                            const countryName = feature.properties.name;
+                            const data = countryData[countryName];
+                            let popupContent;
+
+                            if (data) {
+                                // If data is available, create a detailed popup
+                                popupContent = `
+                                    <div class="popup-content">
+                                        <h3>${countryName}</h3>
+                                        <p><b>Population:</b> ${formatNumber(data.population)} (Est. ${data.year})</p>
+                                        <p><b>GDP:</b> $${formatNumber(data.gdp)} (Est. ${data.year})</p>
+                                        <p><b>GDP per Capita:</b> $${formatNumber(data.gdpPerCapita)} (Est. ${data.year})</p>
+                                    </div>
+                                `;
+                            } else {
+                                // If no data is available, show a simple popup
+                                popupContent = `
+                                    <div class="popup-content">
+                                        <h3>${countryName}</h3>
+                                        <p>Population, GDP, and GDP per capita data not available.</p>
+                                    </div>
+                                `;
+                            }
+
+                            // Bind the custom popup to the country layer
+                            layer.bindPopup(popupContent);
+
+                            // Change the color on hover
+                            layer.on('mouseover', function(e) {
+                                e.target.setStyle({
+                                    weight: 3,
+                                    color: '#666',
+                                    fillOpacity: 0.9
+                                });
+                            });
+                            // Reset the style when the mouse moves out
+                            layer.on('mouseout', function(e) {
+                                countriesLayer.resetStyle(e.target);
+                            });
+                        }
+                    }).addTo(map);
+                })
+                .catch(error => {
+                    console.error('Error loading GeoJSON data:', error);
+                    // Provide a user-friendly error message on the map
+                    document.getElementById('map').innerHTML = `
+                        <div style="text-align:center; padding: 20px; color: #ef4444;">
+                            <p>Failed to load country data. Please check your internet connection and try again.</p>
+                        </div>
+                    `;
+                });
         };
     </script>
 </body>
