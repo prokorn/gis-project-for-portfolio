@@ -11,35 +11,61 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        :root {
+            /* Light Mode Colors */
+            --bg-color: #f3f4f6;
+            --container-bg: #ffffff;
+            --text-color: #1f2937;
+            --secondary-text: #6b7280;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-color: #e5e7eb;
+            --popup-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark-mode {
+            /* Dark Mode Colors */
+            --bg-color: #1f2937;
+            --container-bg: #374151;
+            --text-color: #f9fafb;
+            --secondary-text: #d1d5db;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --border-color: #4b5563;
+            --popup-bg: rgba(31, 41, 55, 0.9);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f3f4f6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .container {
             width: 90%;
             max-width: 1000px;
-            background-color: #ffffff;
+            background-color: var(--container-bg);
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
             padding: 24px;
             margin: 24px;
+            position: relative;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
         h1 {
-            color: #1f2937;
+            color: var(--text-color);
             text-align: center;
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 1rem;
         }
         p {
-            color: #6b7280;
+            color: var(--secondary-text);
             text-align: center;
             margin-bottom: 1.5rem;
         }
@@ -62,9 +88,15 @@
         }
         /* Popup Styling */
         .leaflet-popup-content-wrapper {
+            background: var(--popup-bg);
+            color: var(--text-color);
             border-radius: 8px;
             padding: 12px;
             font-family: 'Inter', sans-serif;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .leaflet-popup-tip {
+            background: var(--popup-bg);
         }
         .popup-content {
             text-align: left;
@@ -78,7 +110,7 @@
         .popup-content h3 {
             margin: 0 0 5px 0;
             font-size: 1.2rem;
-            color: #1f2937;
+            color: var(--text-color);
             text-align: center;
             display: flex; /* Allow inline items */
             align-items: center; /* Vertically align items */
@@ -94,11 +126,11 @@
         .popup-content p {
             margin: 0;
             font-size: 0.9rem;
-            color: #6b7280;
+            color: var(--secondary-text);
             text-align: left;
         }
         .popup-content h3 a {
-            color: #1f2937;
+            color: var(--text-color);
             text-decoration: none;
             border-bottom: 2px solid #3b82f6; /* blue-500 */
         }
@@ -108,16 +140,16 @@
         /* Legend Styling */
         .info {
             padding: 6px 8px;
-            background: white;
-            background: rgba(255,255,255,0.8);
+            background: var(--container-bg);
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             border-radius: 8px;
             font-size: 14px;
-            color: #333;
+            color: var(--secondary-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .info h4 {
             margin: 0 0 5px;
-            color: #777;
+            color: var(--text-color);
         }
         .legend i {
             width: 18px;
@@ -142,22 +174,27 @@
         }
         #search-input {
             padding: 12px 16px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border-color);
+            background-color: var(--container-bg);
+            color: var(--text-color);
             border-radius: 8px;
             font-size: 1rem;
             width: 100%;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
         }
         #search-input:focus {
             outline: none;
             border-color: #3b82f6;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
+        #search-input::placeholder {
+            color: var(--secondary-text);
+        }
         #search-results {
-            background: #ffffff;
+            background: var(--container-bg);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
             max-height: 250px;
             overflow-y: auto;
             list-style: none;
@@ -175,13 +212,14 @@
             cursor: pointer;
             transition: background-color 0.2s ease;
             gap: 12px;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
         }
         .search-item:last-child {
             border-bottom: none;
         }
         .search-item:hover {
-            background-color: #f3f4f6;
+            background-color: var(--border-color);
         }
         .search-item img {
             width: 24px;
@@ -203,10 +241,35 @@
             font-family: 'Inter', sans-serif;
             text-align: center;
         }
+        
+        /* Theme Toggle Button */
+        #theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            z-index: 1001;
+        }
+        #theme-toggle:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <button id="theme-toggle">🌙</button>
         <h1>Countries Data and Famous Landmarks Map</h1>
         <p>An interactive GIS project showcasing famous landmarks and data around the world using Leaflet.js.</p>
         <!-- The div where the map will be rendered -->
@@ -223,6 +286,31 @@
     <script>
         // Use window.onload to ensure the DOM is fully loaded before initializing the map.
         window.onload = function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            // Check for saved theme in localStorage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                themeToggle.textContent = '☀️';
+            } else {
+                body.classList.remove('dark-mode');
+                themeToggle.textContent = '🌙';
+            }
+
+            // Handle theme toggle button click
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeToggle.textContent = '☀️';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeToggle.textContent = '🌙';
+                }
+            });
+
             // Step 1: Initialize the map and set its view.
             const map = L.map('map').setView([40.7128, -74.0060], 3);
             const searchInput = document.getElementById('search-input');
@@ -234,7 +322,7 @@
             // Map country names to their ISO 3166-1 alpha-2 codes for flags.
             const countryCodeMap = {
                 "china": "cn", "united states of america": "us", "india": "in", "japan": "jp", "germany": "de", "united kingdom": "gb",
-                "france": "fr", "brazil": "br", "italy": "it", "canada": "ca", "south korea": "kr", "russia": "ru",
+                "france": "fr", "brazil": "br", "italy": "it", "canada": "ca", "south korea": "kr", "republic of korea": "kr", "russia": "ru",
                 "australia": "au", "spain": "es", "mexico": "mx", "indonesia": "id", "netherlands": "nl", "saudi arabia": "sa",
                 "turkey": "tr", "switzerland": "ch", "argentina": "ar", "sweden": "se", "belgium": "be", "thailand": "th",
                 "austria": "at", "norway": "no", "united arab emirates": "ae", "israel": "il", "nigeria": "ng", "singapore": "sg",
@@ -242,8 +330,8 @@
                 "chile": "cl", "peru": "pe", "iraq": "iq", "egypt": "eg", "south africa": "za", "algeria": "dz",
                 "ukraine": "ua", "morocco": "ma", "angola": "ao", "sudan": "sd", "kenya": "ke", "ethiopia": "et",
                 "ghana": "gh", "czech republic": "cz", "new zealand": "nz", "portugal": "pt", "greece": "gr", "hungary": "hu",
-                "romania": "ro", "poland": "pl", "slovakia": "sk", "slovenia": "si", "croatia": "hr", "republic of serbia": "rs",
-                "bulgaria": "bg", "lithuania": "lt", "latvia": "lv", "estonian": "ee", "finland": "fi", "denmark": "dk",
+                "romania": "ro", "poland": "pl", "slovakia": "sk", "slovenia": "si", "croatia": "hr", "republic of serbia": "rs", "serbia": "rs",
+                "bulgaria": "bg", "lithuania": "lt", "latvia": "lv", "estonian": "ee", "estonia": "ee", "finland": "fi", "denmark": "dk",
                 "ireland": "ie", "iceland": "is", "luxembourg": "lu", "qatar": "qa", "kuwait": "kw", "oman": "om",
                 "bahrain": "bh", "jordan": "jo", "lebanon": "lb", "syria": "sy", "yemen": "ye", "afghanistan": "af",
                 "kazakhstan": "kz", "uzbekistan": "uz", "turkmenistan": "tm", "kyrgyzstan": "kg", "tajikistan": "tj", "mongolia": "mn",
@@ -262,7 +350,7 @@
                 "chad": "td", "south sudan": "ss", "eritrea": "er", "djibouti": "dj", "somalia": "so", "uganda": "ug",
                 "rwanda": "rw", "burundi": "bi", "tanzania": "tz", "seychelles": "sc", "comoros": "km", "madagascar": "mg",
                 "mauritius": "mu", "mozambique": "mz", "zambia": "zm", "zimbabwe": "zw", "malawi": "mw", "namibia": "na",
-                "botswana": "bw", "lesotho": "ls", "eswatini": "sz", "gabon": "ga", "congo (brazzaville)": "cg", "congo (kinshasa)": "cd",
+                "botswana": "bw", "lesotho": "ls", "eswatini": "sz", "gabon": "ga", "congo (brazzaville)": "cg", "congo (kinshasa)": "cd", "congo": "cd",
                 "central african republic": "cf", "cameroon": "cm", "equatorial guinea": "gq", "são tomé and príncipe": "st",
                 "ivory coast": "ci", "togo": "tg", "benin": "bj", "burkina faso": "bf", "liberia": "lr", "sierra leone": "sl",
                 "guinea": "gn", "guinea-bissau": "gw", "gambia": "gm", "senegal": "sn", "armenia": "am", "azerbaijan": "az",
@@ -270,7 +358,6 @@
                 "andorra": "ad", "malta": "mt", "cyprus": "cy", "montenegro": "me", "macedonia": "mk", "belarus": "by",
                 "albania": "al", "bosnia and herzegovina": "ba"
             };
-
 
             // Step 2: Add a tile layer. This is the base map.
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -588,6 +675,7 @@
                 "Albania": { "population": 2795635, "gdp": 27180000000, "gdpPerCapita": 10011.6, "year": 2024 },
                 "Bosnia and Herzegovina": { "population": 3210000, "gdp": 28343000000, "gdpPerCapita": 8957, "year": 2024 }
             };
+
 
             // Function to generate a random hex color
             function getRandomColor() {
