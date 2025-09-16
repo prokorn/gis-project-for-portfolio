@@ -43,6 +43,9 @@
             text-align: center;
             margin-bottom: 1.5rem;
         }
+        .map-container {
+            position: relative;
+        }
         #map {
             height: 600px; /* Set a specific height for the map container */
             width: 100%;
@@ -77,6 +80,16 @@
             font-size: 1.2rem;
             color: #1f2937;
             text-align: center;
+            display: flex; /* Allow inline items */
+            align-items: center; /* Vertically align items */
+            justify-content: center;
+            gap: 10px;
+        }
+        .popup-content h3 img.flag {
+            width: 24px;
+            height: 16px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .popup-content p {
             margin: 0;
@@ -114,6 +127,82 @@
             opacity: 0.7;
             border-radius: 4px;
         }
+
+        /* Search Bar and Results Styling */
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #search-input {
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        #search-results {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 250px;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: none; /* Hide by default */
+        }
+        .search-results-visible {
+            display: block !important;
+        }
+        .search-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            gap: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .search-item:last-child {
+            border-bottom: none;
+        }
+        .search-item:hover {
+            background-color: #f3f4f6;
+        }
+        .search-item img {
+            width: 24px;
+            height: 16px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            display: none; /* Hidden by default */
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -121,7 +210,14 @@
         <h1>Countries Data and Famous Landmarks Map</h1>
         <p>An interactive GIS project showcasing famous landmarks and data around the world using Leaflet.js.</p>
         <!-- The div where the map will be rendered -->
-        <div id="map"></div>
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search for a country...">
+                <div id="search-results"></div>
+            </div>
+            <div id="message-box" class="message-box"></div>
+        </div>
     </div>
 
     <script>
@@ -129,6 +225,52 @@
         window.onload = function() {
             // Step 1: Initialize the map and set its view.
             const map = L.map('map').setView([40.7128, -74.0060], 3);
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            const messageBox = document.getElementById('message-box');
+            let geoJsonLayer = null;
+            const countryFeatures = {};
+
+            // Map country names to their ISO 3166-1 alpha-2 codes for flags.
+            const countryCodeMap = {
+                "china": "cn", "united states of america": "us", "india": "in", "japan": "jp", "germany": "de", "united kingdom": "gb",
+                "france": "fr", "brazil": "br", "italy": "it", "canada": "ca", "south korea": "kr", "russia": "ru",
+                "australia": "au", "spain": "es", "mexico": "mx", "indonesia": "id", "netherlands": "nl", "saudi arabia": "sa",
+                "turkey": "tr", "switzerland": "ch", "argentina": "ar", "sweden": "se", "belgium": "be", "thailand": "th",
+                "austria": "at", "norway": "no", "united arab emirates": "ae", "israel": "il", "nigeria": "ng", "singapore": "sg",
+                "malaysia": "my", "philippines": "ph", "bangladesh": "bd", "vietnam": "vn", "pakistan": "pk", "colombia": "co",
+                "chile": "cl", "peru": "pe", "iraq": "iq", "egypt": "eg", "south africa": "za", "algeria": "dz",
+                "ukraine": "ua", "morocco": "ma", "angola": "ao", "sudan": "sd", "kenya": "ke", "ethiopia": "et",
+                "ghana": "gh", "czech republic": "cz", "new zealand": "nz", "portugal": "pt", "greece": "gr", "hungary": "hu",
+                "romania": "ro", "poland": "pl", "slovakia": "sk", "slovenia": "si", "croatia": "hr", "republic of serbia": "rs",
+                "bulgaria": "bg", "lithuania": "lt", "latvia": "lv", "estonian": "ee", "finland": "fi", "denmark": "dk",
+                "ireland": "ie", "iceland": "is", "luxembourg": "lu", "qatar": "qa", "kuwait": "kw", "oman": "om",
+                "bahrain": "bh", "jordan": "jo", "lebanon": "lb", "syria": "sy", "yemen": "ye", "afghanistan": "af",
+                "kazakhstan": "kz", "uzbekistan": "uz", "turkmenistan": "tm", "kyrgyzstan": "kg", "tajikistan": "tj", "mongolia": "mn",
+                "nepal": "np", "sri lanka": "lk", "maldives": "mv", "bhutan": "bt", "myanmar": "mm", "cambodia": "kh",
+                "laos": "la", "brunei": "bn", "timor-leste": "tl", "papua new guinea": "pg", "fiji": "fj", "solomon islands": "sb",
+                "vanuatu": "vu", "samoa": "ws", "tonga": "to", "micronesia": "fm", "palau": "pw", "marshall islands": "mh",
+                "nauru": "nr", "tuvalu": "tv", "guatemala": "gt", "honduras": "hn", "el salvador": "sv", "nicaragua": "ni",
+                "costa rica": "cr", "panama": "pa", "cuba": "cu", "haiti": "ht", "dominican republic": "do", "jamaica": "jm",
+                "trinidad and tobago": "tt", "barbados": "bb", "the bahamas": "bs", "belize": "bz", "guyana": "gy", "suriname": "sr",
+                "venezuela": "ve", "ecuador": "ec", "bolivia": "bo", "paraguay": "py", "uruguay": "uy", "french guiana": "gf",
+                "greenland": "gl", "bermuda": "bm", "saint lucia": "lc", "grenada": "gd", "saint vincent and the grenadines": "vc",
+                "antigua and barbuda": "ag", "dominica": "dm", "saint kitts and nevis": "kn", "puerto rico": "pr", "aruba": "aw",
+                "curaçao": "cw", "sint maarten": "sx", "turks and caicos": "tc", "cayman islands": "ky", "british virgin islands": "vg",
+                "anguilla": "ai", "montserrat": "ms", "saint martin": "mf", "guadeloupe": "gp", "martinique": "mq", "reunion": "re",
+                "mayotte": "yt", "tunisia": "tn", "libya": "ly", "mauritania": "mr", "mali": "ml", "niger": "ne",
+                "chad": "td", "south sudan": "ss", "eritrea": "er", "djibouti": "dj", "somalia": "so", "uganda": "ug",
+                "rwanda": "rw", "burundi": "bi", "tanzania": "tz", "seychelles": "sc", "comoros": "km", "madagascar": "mg",
+                "mauritius": "mu", "mozambique": "mz", "zambia": "zm", "zimbabwe": "zw", "malawi": "mw", "namibia": "na",
+                "botswana": "bw", "lesotho": "ls", "eswatini": "sz", "gabon": "ga", "congo (brazzaville)": "cg", "congo (kinshasa)": "cd",
+                "central african republic": "cf", "cameroon": "cm", "equatorial guinea": "gq", "são tomé and príncipe": "st",
+                "ivory coast": "ci", "togo": "tg", "benin": "bj", "burkina faso": "bf", "liberia": "lr", "sierra leone": "sl",
+                "guinea": "gn", "guinea-bissau": "gw", "gambia": "gm", "senegal": "sn", "armenia": "am", "azerbaijan": "az",
+                "georgia": "ge", "palestine": "ps", "kiribati": "ki", "monaco": "mc", "liechtenstein": "li", "san marino": "sm",
+                "andorra": "ad", "malta": "mt", "cyprus": "cy", "montenegro": "me", "macedonia": "mk", "belarus": "by",
+                "albania": "al", "bosnia and herzegovina": "ba"
+            };
+
 
             // Step 2: Add a tile layer. This is the base map.
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -215,7 +357,7 @@
                     lat: -22.9519,
                     lng: -43.2105,
                     description: "An Art Deco statue of Jesus Christ in Rio de Janeiro, Brazil.",
-                    imageUrl: "https://cdn.britannica.com/54/150754-050-5B93A950/statue-Christ-the-Redeemer-Rio-de-Janeiro.jpg",
+                    imageUrl: "https://cdn.britannica.com/54/150754-050-5B93A950-statue-Christ-the-Redeemer-Rio-de-Janeiro.jpg",
                     wikipediaUrl: "https://en.wikipedia.org/wiki/Christ_the_Redeemer"
                 },
                 {
@@ -236,30 +378,7 @@
                 }
             ];
 
-            // Step 5: Loop through the landmarks and add a marker for each one.
-            landmarks.forEach(landmark => {
-                const marker = L.marker([landmark.lat, landmark.lng], {icon: svgIcon}).addTo(map);
-
-                // Create a custom HTML string for the popup, including the image and the new link.
-                const popupContent = `
-                    <div class="popup-content">
-                        <img src="${landmark.imageUrl}" alt="${landmark.name} photo" onerror="this.onerror=null; this.src='https://placehold.co/200x150/FFC0CB/000000?text=Image+Unavailable';">
-                        <h3><a href="${landmark.wikipediaUrl}" target="_blank">${landmark.name}</a></h3>
-                        <p>${landmark.description}</p>
-                    </div>
-                `;
-
-                // Bind the custom popup to the marker.
-                marker.bindPopup(popupContent);
-            });
-
-            // ---
-            // NEW CODE FOR COUNTRY LAYERS
-            // ---
-
-            // A data source for countries with population, GDP, and GDP per capita information.
-            // This is a simplified, hardcoded dataset for demonstration purposes.
-            // For a more robust solution, this data would be fetched from a live API.
+            // Step 5: Define data for countries.
             const countryData = {
                 "China": { "population": 1425892000, "gdp": 17734000000000, "gdpPerCapita": 12422, "year": 2024 },
                 "United States of America": { "population": 338289857, "gdp": 29184900000000, "gdpPerCapita": 86300, "year": 2024 },
@@ -485,6 +604,15 @@
                 return num.toLocaleString();
             }
 
+            // Function to show a temporary message
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+
             // Fetch the GeoJSON data for world countries
             fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
                 .then(response => {
@@ -507,12 +635,22 @@
 
                     // Function to handle interactions with each country feature
                     const onEachFeature = (feature, layer) => {
+                        // Store a reference to the layer for later use
+                        countryFeatures[feature.properties.name.toLowerCase()] = layer;
+                        
                         const countryName = feature.properties.name;
+                        const countryCode = countryCodeMap[countryName.toLowerCase()] || 'xx';
                         const data = countryData[countryName];
+                        
+                        let popupContent = '';
+
                         if (data) {
-                            const popupContent = `
+                            popupContent = `
                                 <div class="popup-content">
-                                    <h3>${countryName}</h3>
+                                    <h3>
+                                        <img src="https://flagcdn.com/w20/${countryCode}.png" alt="${countryName} flag" class="flag">
+                                        ${countryName}
+                                    </h3>
                                     <p><strong>Population:</strong> ${formatNumber(data.population)}</p>
                                     <p><strong>GDP:</strong> $${formatNumber(data.gdp)}</p>
                                     <p><strong>GDP per Capita:</strong> $${formatNumber(data.gdpPerCapita)}</p>
@@ -521,12 +659,21 @@
                             `;
                             layer.bindPopup(popupContent);
                         } else {
-                            layer.bindPopup(`<h3>${countryName}</h3><p>Data not available.</p>`);
+                            popupContent = `
+                                <div class="popup-content">
+                                    <h3>
+                                        <img src="https://flagcdn.com/w20/${countryCode}.png" alt="${countryName} flag" class="flag">
+                                        ${countryName}
+                                    </h3>
+                                    <p>Data not available.</p>
+                                </div>
+                            `;
+                            layer.bindPopup(popupContent);
                         }
                     };
 
-                    // Add the GeoJSON layer to the map
-                    L.geoJSON(data, {
+                    // Add the GeoJSON layer to the map and store a reference to it
+                    geoJsonLayer = L.geoJSON(data, {
                         style: style,
                         onEachFeature: onEachFeature
                     }).addTo(map);
@@ -545,7 +692,69 @@
                 })
                 .catch(error => {
                     console.error('Error fetching GeoJSON data:', error);
+                    showMessage('Error loading map data. Please try again.');
                 });
+
+            // Add markers for landmarks after the map is initialized
+            landmarks.forEach(landmark => {
+                const marker = L.marker([landmark.lat, landmark.lng], {icon: svgIcon}).addTo(map);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <img src="${landmark.imageUrl}" alt="${landmark.name} photo" onerror="this.onerror=null; this.src='https://placehold.co/200x150/FFC0CB/000000?text=Image+Unavailable';">
+                        <h3><a href="${landmark.wikipediaUrl}" target="_blank">${landmark.name}</a></h3>
+                        <p>${landmark.description}</p>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+            });
+
+            // Handle search-as-you-type functionality
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase().trim();
+                searchResults.innerHTML = ''; // Clear previous results
+
+                if (query.length > 0) {
+                    const filteredCountries = Object.keys(countryFeatures).filter(country =>
+                        country.startsWith(query)
+                    );
+
+                    if (filteredCountries.length > 0) {
+                        searchResults.classList.add('search-results-visible');
+                        filteredCountries.forEach(countryName => {
+                            const countryDisplayName = countryName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                            const countryCode = countryCodeMap[countryName] || 'xx'; // Use 'xx' for a placeholder if code is missing
+                            const listItem = document.createElement('div');
+                            listItem.classList.add('search-item');
+                            listItem.innerHTML = `
+                                <img src="https://flagcdn.com/w20/${countryCode}.png" alt="${countryDisplayName} flag">
+                                <span>${countryDisplayName}</span>
+                            `;
+                            
+                            listItem.addEventListener('click', () => {
+                                const layer = countryFeatures[countryName];
+                                if (layer) {
+                                    map.fitBounds(layer.getBounds());
+                                    layer.openPopup();
+                                    searchResults.classList.remove('search-results-visible');
+                                }
+                            });
+                            searchResults.appendChild(listItem);
+                        });
+                    } else {
+                        searchResults.classList.remove('search-results-visible');
+                    }
+                } else {
+                    searchResults.classList.remove('search-results-visible');
+                }
+            });
+
+            // Hide search results when clicking outside
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('.search-container')) {
+                    searchResults.classList.remove('search-results-visible');
+                }
+            });
         };
     </script>
 </body>
